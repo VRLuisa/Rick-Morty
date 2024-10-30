@@ -3,45 +3,58 @@ package com.example.rickandmorty
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.material3.Surface
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.rickandmorty.ui.screen.CharacterDetailScreen
+import com.example.rickandmorty.ui.screen.HomeScreen
 import com.example.rickandmorty.ui.theme.RickAndMortyTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
             RickAndMortyTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                val navController = rememberNavController()
+
+                Scaffold { innerPadding -> // Scaffold nos da PaddingValues
+                    Surface(color = MaterialTheme.colorScheme.background) {
+                        NavHost(
+                            navController = navController,
+                            startDestination = "home"
+                        ) {
+                            // Configuración de HomeScreen con paddingValues
+                            composable("home") {
+                                HomeScreen(
+                                    innerPadding = innerPadding, // Usamos el innerPadding de Scaffold
+                                    navController = navController
+                                )
+                            }
+
+                            // Configuración de CharacterDetailScreen con argumento characterId
+                            composable(
+                                route = "character_detail/{characterId}",
+                                arguments = listOf(navArgument("characterId") { type = NavType.IntType })
+                            ) { backStackEntry ->
+                                val characterId = backStackEntry.arguments?.getInt("characterId") ?: 0
+                                CharacterDetailScreen(
+                                    id = characterId,
+                                    innerPaddingValues = PaddingValues(0.dp)
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    RickAndMortyTheme {
-        Greeting("Android")
-    }
-}
